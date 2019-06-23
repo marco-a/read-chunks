@@ -17,5 +17,6 @@
     "read"
   ],
   "author": "Marco Agnoli",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": "github:marco-a/read-chunks"
 }
