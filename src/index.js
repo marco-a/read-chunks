@@ -24,7 +24,53 @@ import fs from "fs"
 import promiseWaterfall from "promise-waterfall"
 import readChunk from "read-chunk"
 
-export default function(file, chunkSize, onChunk) {
+const sync = function(file, chunkSize, onChunk) {
+	return new Promise((resolve, reject) => {
+		try {
+			const fSize = fs.statSync(file).size
+			const nChunks = Math.floor(fSize / chunkSize)
+			const reminder = fSize % chunkSize
+
+			let bytesRead = 0
+
+			// read chunks
+			for (let i = 0; i < nChunks; ++i) {
+				let chunk = readChunk.sync(file, bytesRead, chunkSize)
+
+				bytesRead += chunkSize
+
+				onChunk({
+					chunk,
+					readNextChunk: null,
+					percentage: (bytesRead / fSize)
+				})
+
+				chunk = null
+			}
+
+			// read reminder
+			if (reminder > 0) {
+				let chunk = readChunk.sync(file, bytesRead, reminder)
+
+				bytesRead += reminder
+
+				onChunk({
+					chunk,
+					readNextChunk: null,
+					percentage: (bytesRead / fSize)
+				})
+
+				chunk = null
+			}
+
+			resolve()
+		} catch (error) {
+			reject(error)
+		}
+	})
+}
+
+const mod = function(file, chunkSize, onChunk) {
 	return new Promise((resolve, reject) => {
 		// get file size
 		const fSize = fs.statSync(file).size
@@ -32,13 +78,25 @@ export default function(file, chunkSize, onChunk) {
 		const nChunks = Math.floor(fSize / chunkSize)
 		// calculate reminder
 		const reminder = fSize % chunkSize
+		// number of bytes read
+		let bytesRead = 0
 
 		// read chunk function
 		const readChunkFunction = (offset, length) => {
 			return new Promise((resolve, reject) => {
 				readChunk(file, offset, length)
 				.then((chunk) => {
-					onChunk(chunk, resolve)
+					bytesRead += length
+
+					onChunk({
+						chunk,
+						readNextChunk: () => {
+							chunk = null
+
+							resolve()
+						},
+						percentage: (bytesRead / fSize)
+					})
 				})
 				.catch(reject)
 			})
@@ -67,3 +125,7 @@ export default function(file, chunkSize, onChunk) {
 		.catch(reject)
 	})
 }
+
+mod.sync = sync
+
+export default mod
