@@ -1,0 +1,21 @@
+{
+  "name": "read-chunks",
+  "version": "1.0.0",
+  "description": "Read a file in chunks.",
+  "main": "dist/index.js",
+  "dependencies": {
+    "promise-waterfall": "^0.1.0",
+    "read-chunk": "^3.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "./build.sh && node dist/test.js"
+  },
+  "keywords": [
+    "chunk",
+    "read-chunk",
+    "read"
+  ],
+  "author": "Marco Agnoli",
+  "license": "MIT"
+}
