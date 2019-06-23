@@ -4,7 +4,7 @@ Uses `read-chunk` to read files in chunks.
 
 # Usage
 
-javascript```
+```javascript
 import readChunks from "read-chunks"
 
 // read a file with chunk size of 6 bytes
